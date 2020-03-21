@@ -1,4 +1,5 @@
 import 'package:ckpmessaging/pages/ConversationPage.dart';
+import 'package:ckpmessaging/widgets/ConversationPageSlide.dart';
 import 'package:flutter/material.dart';
 
 void main() => runApp(MyApp());
@@ -14,7 +15,7 @@ class MyApp extends StatelessWidget {
         
         primarySwatch: Colors.blue,
       ),
-      home: ConversationPage(),
+      home: ConversationPageSlide(),
     );
   }
 }

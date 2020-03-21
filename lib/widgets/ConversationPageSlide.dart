@@ -1,16 +1,31 @@
 import 'package:ckpmessaging/pages/ConversationBottomSheet.dart';
+import 'package:ckpmessaging/pages/ConversationPage.dart';
+import 'package:ckpmessaging/widgets/ChatlistWidget.dart';
 import 'package:ckpmessaging/widgets/InputWidget.dart';
 import 'package:flutter/material.dart';
-import 'package:ckpmessaging/pages/ConversationPage.dart';
+import 'package:rubber/rubber.dart';
 
-class ConversationPageList extends StatefulWidget {
+
+class ConversationPageSlide extends StatefulWidget {
   @override
-  _ConversationPageListState createState() => _ConversationPageListState();
-  const ConversationPageList();
+  _ConversationPageSlideState createState() => _ConversationPageSlideState();
+
+  const ConversationPageSlide();
 }
 
-class _ConversationPageListState extends State<ConversationPageList> {
+class _ConversationPageSlideState extends State<ConversationPageSlide>
+    with SingleTickerProviderStateMixin {
+  var controller;
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+
+  @override
+  void initState() {
+    controller = RubberAnimationController(
+      vsync: this,
+    );
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -23,7 +38,8 @@ class _ConversationPageListState extends State<ConversationPageList> {
                   children: <Widget>[
                     ConversationPage(),
                     ConversationPage(),
-                    ConversationPage()
+                    ConversationPage(),
+                    
                   ],
                 )),
                 Container(

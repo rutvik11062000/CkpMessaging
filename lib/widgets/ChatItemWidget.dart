@@ -9,83 +9,87 @@ class ChatItemWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (index % 2 == 0) {
-      return Container(
-        child: Column(
-          children: <Widget>[
-            Row(
-              children: <Widget>[
-                Container(
-                  child: Text(
-                    "this message is sent",
-                    style: TextStyle(color: Palette.selfMessageColor),
-                  ),
-                  padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
-                  margin: EdgeInsets.only(right: 10.0),
-                  width: 200.0,
-                  decoration: BoxDecoration(
-                      color: Palette.selfMessageBackgroundColor,
-                      borderRadius: BorderRadius.circular(8.0)),
-                ),
-              ],
-              mainAxisAlignment: MainAxisAlignment.end,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: <Widget>[
-                Container(
-                  child: Text(
-                    DateFormat('dd MMM kk:mm').format(
-                      DateTime.fromMillisecondsSinceEpoch(1565888474278),
+      return Material(
+              child: Container(
+          child: Column(
+            children: <Widget>[
+              Row(
+                children: <Widget>[
+                  Container(
+                    child: Text(
+                      "this message is sent",
+                      style: TextStyle(color: Palette.selfMessageColor),
                     ),
-                    style: TextStyle(
-                      color: Palette.greyColor,
-                      fontSize: 12.0,
-                      fontStyle: FontStyle.normal,
-                    ),
+                    padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
+                    margin: EdgeInsets.only(right: 10.0),
+                    width: 200.0,
+                    decoration: BoxDecoration(
+                        color: Palette.selfMessageBackgroundColor,
+                        borderRadius: BorderRadius.circular(8.0)),
                   ),
-                  margin: EdgeInsets.only(top: 5.0, left: 5.0, bottom: 5.0),
-                ),
-              ],
-            ),
-          ],
+                ],
+                mainAxisAlignment: MainAxisAlignment.end,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: <Widget>[
+                  Container(
+                    child: Text(
+                      DateFormat('dd MMM kk:mm').format(
+                        DateTime.fromMillisecondsSinceEpoch(1565888474278),
+                      ),
+                      style: TextStyle(
+                        color: Palette.greyColor,
+                        fontSize: 12.0,
+                        fontStyle: FontStyle.normal,
+                      ),
+                    ),
+                    margin: EdgeInsets.only(top: 5.0, left: 5.0, bottom: 5.0),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       );
     } else {
       // This is a received message
-      return Container(
-        child: Column(
-          children: <Widget>[
-            Row(
-              children: <Widget>[
-                Container(
-                  child: Text(
-                    'This is a received message',
-                    style: TextStyle(color: Palette.otherMessageColor),
-                  ),
-                  padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
-                  width: 200.0,
-                  decoration: BoxDecoration(
-                      color: Palette.otherMessageBackgroundColor,
-                      borderRadius: BorderRadius.circular(8.0)),
-                  margin: EdgeInsets.only(left: 10.0),
-                )
-              ],
-            ),
-            Container(
-              child: Text(
-                DateFormat('dd MMM kk:mm')
-                    .format(DateTime.fromMillisecondsSinceEpoch(1565888474278)),
-                style: TextStyle(
-                    color: Palette.greyColor,
-                    fontSize: 12.0,
-                    fontStyle: FontStyle.normal),
+      return Material(
+              child: Container(
+          child: Column(
+            children: <Widget>[
+              Row(
+                children: <Widget>[
+                  Container(
+                    child: Text(
+                      'This is a received message',
+                      style: TextStyle(color: Palette.otherMessageColor),
+                    ),
+                    padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
+                    width: 200.0,
+                    decoration: BoxDecoration(
+                        color: Palette.otherMessageBackgroundColor,
+                        borderRadius: BorderRadius.circular(8.0)),
+                    margin: EdgeInsets.only(left: 10.0),
+                  )
+                ],
               ),
-              margin: EdgeInsets.only(left: 5.0, top: 5.0, bottom: 5.0),
-            )
-          ],
-          crossAxisAlignment: CrossAxisAlignment.start,
+              Container(
+                child: Text(
+                  DateFormat('dd MMM kk:mm')
+                      .format(DateTime.fromMillisecondsSinceEpoch(1565888474278)),
+                  style: TextStyle(
+                      color: Palette.greyColor,
+                      fontSize: 12.0,
+                      fontStyle: FontStyle.normal),
+                ),
+                margin: EdgeInsets.only(left: 5.0, top: 5.0, bottom: 5.0),
+              )
+            ],
+            crossAxisAlignment: CrossAxisAlignment.start,
+          ),
+          margin: EdgeInsets.only(bottom: 10.0),
         ),
-        margin: EdgeInsets.only(bottom: 10.0),
       );
     }
   }
