@@ -1,7 +1,5 @@
-
 import 'package:ckpmessaging/widgets/ChatAppBar.dart';
 import 'package:ckpmessaging/widgets/ChatlistWidget.dart';
-
 import 'package:flutter/material.dart';
 
 class ConversationPage extends StatefulWidget {

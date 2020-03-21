@@ -1,4 +1,3 @@
-import 'package:ckpmessaging/pages/ConversationPage.dart';
 import 'package:ckpmessaging/widgets/ConversationPageSlide.dart';
 import 'package:flutter/material.dart';
 
