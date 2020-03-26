@@ -14,7 +14,7 @@ class UserDataProvider extends BaseUserDataProvider {
         .document(user.uid); //reference of the user's document node in database/users. This node is created using uid
     final bool userExists = await ref.snapshots().isEmpty; // check if user exists or not
     var data = {
-      //add details received from google auth
+      //add details received from google auth               
       'uid': user.uid,
       'email': user.email,
       'name': user.displayName,

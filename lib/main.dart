@@ -1,21 +1,54 @@
+import 'package:ckpmessaging/blocks/authentication/bloc/authentication_bloc.dart';
+import 'package:ckpmessaging/config/Palette.dart';
 import 'package:ckpmessaging/pages/RegisterPage.dart';
+import 'package:ckpmessaging/repositories/authenticationRepository.dart';
+import 'package:ckpmessaging/repositories/storageRepository.dart';
+import 'package:ckpmessaging/repositories/userDataRepository.dart';
 import 'package:ckpmessaging/widgets/ConversationPageSlide.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  final AuthenticationRepository authenticationRepository = AuthenticationRepository();
+  final UserDataRepository userDataRepository = UserDataRepository();
+  final StorageRepository storageRepository = StorageRepository();
+  runApp(
+    BlocProvider(
+      create: 
+      (BuildContext context) => AuthenticationBloc(
+        authenticationRepository: authenticationRepository,
+        userDataRepository: userDataRepository,
+        storageRepository: storageRepository,
+      )..add(AppLaunched()) ,
+      child: MyApp(),
+    ),
+  );
+
+}
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Ckp Messaging',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         
         primarySwatch: Colors.blue,
       ),
-      home: RegisterPage(),
+      home: BlocBuilder<AuthenticationBloc, AuthenticationState>(
+        builder: (context, state) {
+          if (state is UnAuthenticated) {
+            return RegisterPage();
+          } else if(state is ProfileUpdated){
+            return ConversationPageSlide();
+          }else{
+            return RegisterPage();
+          }
+        },
+      ),
     );
   }
 }

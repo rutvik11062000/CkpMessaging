@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:ckpmessaging/blocks/authentication/bloc/authentication_bloc.dart';
 import 'package:ckpmessaging/config/Assets.dart';
 import 'package:ckpmessaging/config/Palette.dart';
 import 'package:ckpmessaging/config/Styles.dart';
@@ -5,6 +8,8 @@ import 'package:ckpmessaging/config/Transitions.dart';
 import 'package:ckpmessaging/widgets/CircleIndicator.dart';
 import 'package:ckpmessaging/widgets/ConversationPageSlide.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:numberpicker/numberpicker.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -21,10 +26,13 @@ class _RegisterPageState extends State<RegisterPage>
   int age = 18;
   var isKeyboardOpen =
       false; //this variable keeps track of the keyboard, when its shown and when its hidden
+  File profileImageFile;
+  ImageProvider profileImage;
 
   PageController pageController =
-      PageController(); // this is the controller of the page. This is used to navigate back and forth between the pages
+      PageController(); // this is the controller of the page. This is used to navigate back and forth between the pages  
 
+  final TextEditingController usernameController = TextEditingController();
   //Fields related to animation of the gradient
   Alignment begin = Alignment.center;
   Alignment end = Alignment.bottomRight;
@@ -33,10 +41,15 @@ class _RegisterPageState extends State<RegisterPage>
   AnimationController usernameFieldAnimationController;
   Animation profilePicHeightAnimation, usernameAnimation, ageAnimation;
   FocusNode usernameFocusNode = FocusNode();
-
+  AuthenticationBloc authenticationBloc;
 
   @override
   void initState() {
+    super.initState();
+    initApp();
+  }
+
+  void initApp() async {
     WidgetsBinding.instance.addObserver(this);
     usernameFieldAnimationController =
         AnimationController(vsync: this, duration: Duration(milliseconds: 300));
@@ -69,6 +82,13 @@ class _RegisterPageState extends State<RegisterPage>
       });
     });
     super.initState();
+
+    authenticationBloc = BlocProvider.of<AuthenticationBloc>(context);
+    authenticationBloc.listen((state) {
+      if (state is Authenticated) {
+        updatePageState(1);
+      }
+    });
   }
 
   @override
@@ -111,7 +131,9 @@ class _RegisterPageState extends State<RegisterPage>
                           ),
                         ),
                         AnimatedOpacity(
-                            opacity: currentPage == 1 ? 1.0 : 0.0, //shows only on page 1
+                            opacity: currentPage == 1
+                                ? 1.0
+                                : 0.0, //shows only on page 1
                             duration: Duration(milliseconds: 500),
                             child: Container(
                                 margin: EdgeInsets.only(right: 20, bottom: 20),
@@ -133,77 +155,247 @@ class _RegisterPageState extends State<RegisterPage>
                       ]))),
         ));
   }
+  buildHome() {
+    return Container(
+        decoration: BoxDecoration(
+            gradient: LinearGradient(begin: begin, end: end, colors: [
+          Palette.gradientStartColor,
+          Palette.gradientEndColor
+        ])),
+        child: Stack(
+            alignment: AlignmentDirectional.bottomCenter,
+            children: <Widget>[
+              PageView(
+                  controller: pageController,
+                  physics: NeverScrollableScrollPhysics(),
+                  onPageChanged: (int page) => updatePageState(page),
+                  children: <Widget>[buildPageOne(), buildPageTwo()]),
+              Container(
+                margin: EdgeInsets.only(bottom: 30),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    for (int i = 0; i < 2; i++)
+                      CircleIndicator(i == currentPage),
+                  ],
+                ),
+              ),
+              buildUpdateProfileButtonWidget()
+            ]));
+  }
+  buildCircularProgressBarWidget() {
+    return Container(
+        decoration: BoxDecoration(
+            gradient: LinearGradient(begin: begin, end: end, colors: [
+          Palette.gradientStartColor,
+          Palette.gradientEndColor
+        ])),
+        child: Container(
+            child: Center(
+          child: Column(children: <Widget>[
+            buildHeaderSectionWidget(),
+            Container(
+              margin: EdgeInsets.only(top: 100),
+              child: CircularProgressIndicator(
+                  valueColor:
+                      AlwaysStoppedAnimation<Color>(Palette.primaryColor)),
+            )
+          ]),
+        )));
+  }
 
   buildPageOne() {
-    return Container(
-      child: Column(
-        children: <Widget>[
-          Container(
-              margin: EdgeInsets.only(top: 250),
-              child: Image.asset(Assets.app_icon_fg, height: 100)),
-          Container(
-              margin: EdgeInsets.only(top: 30),
-              child: Text('Ckp Messenger',
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 22))),
-          Container(
-              margin: EdgeInsets.only(top: 100),
-              child: ButtonTheme(
-                  height: 40,
-                  child: FlatButton.icon(
-                      onPressed: () => updatePageState(1),
-                      color: Colors.transparent,
-                      icon: Image.asset(
-                        Assets.google_button,
-                        height: 25,
-                      ),
-                      label: Text(
-                        'Sign In with Google',
-                        style: TextStyle(
-                            color: Palette.primaryTextColorLight,
-                            fontWeight: FontWeight.w800),
-                      ))))
-        ],
-      ),
+    return Column(
+      children: <Widget>[buildHeaderSectionWidget(), buildGoogleButtonWidget()],
     );
   }
+
+  buildHeaderSectionWidget() {
+    return Column(children: <Widget>[
+      Container(
+          margin: EdgeInsets.only(top: 250),
+          child: Image.asset(Assets.app_icon_fg, height: 100)),
+      Container(
+          margin: EdgeInsets.only(top: 30),
+          child: Text('Messio Messenger',
+              style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 22)))
+    ]);
+  }
+
+  // buildPageOne() {
+  //   return Container(
+  //     child: Column(
+  //       children: <Widget>[
+  //         Container(
+  //             margin: EdgeInsets.only(top: 250),
+  //             child: Image.asset(Assets.app_icon_fg, height: 100)),
+  //         Container(
+  //             margin: EdgeInsets.only(top: 30),
+  //             child: Text('Ckp Messenger',
+  //                 style: TextStyle(
+  //                     color: Colors.white,
+  //                     fontWeight: FontWeight.bold,
+  //                     fontSize: 22))),
+  //         Container(
+  //           margin: EdgeInsets.only(top: 100),
+  //           child: ButtonTheme(
+  //             height: 40,
+  //             child: FlatButton.icon(
+  //               onPressed: () => BlocProvider.of<AuthenticationBloc>(context)
+  //                   .add(ClickedGoogleLogin()),
+  //               color: Colors.transparent,
+  //               icon: Image.asset(
+  //                 Assets.google_button,
+  //                 height: 25,
+  //               ),
+  //               label: Text(
+  //                 'Sign In with Google',
+  //                 style: TextStyle(
+  //                     color: Palette.primaryTextColorLight,
+  //                     fontWeight: FontWeight.w800),
+  //               ),
+  //             ),
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
+  buildGoogleButtonWidget() {
+    return Container(
+        margin: EdgeInsets.only(top: 100),
+        child: FlatButton.icon(
+            onPressed: () => BlocProvider.of<AuthenticationBloc>(context)
+                .add(ClickedGoogleLogin()),
+            color: Colors.transparent,
+            icon: Image.asset(
+              Assets.google_button,
+              height: 25,
+            ),
+            label: Text(
+              'Sign In with Google',
+              style: TextStyle(
+                  color: Palette.primaryTextColorLight,
+                  fontWeight: FontWeight.w800),
+            )));
+  }
+
+  // buildPageTwo() {
+  //   return InkWell(
+  //       // to dismiss the keyboard when the user tabs out of the TextField
+  //       onTap: () {
+  //         FocusScope.of(context).requestFocus(FocusNode());
+  //       },
+  //       child: Container(
+  //         child: Column(
+  //           crossAxisAlignment: CrossAxisAlignment.center,
+  //           children: <Widget>[
+  //             SizedBox(height: profilePicHeightAnimation.value),
+  //             Container(
+  //                 child: CircleAvatar(
+  //               child: Column(
+  //                 mainAxisAlignment: MainAxisAlignment.center,
+  //                 children: <Widget>[
+  //                   Icon(
+  //                     Icons.camera,
+  //                     color: Colors.white,
+  //                     size: 15,
+  //                   ),
+  //                   Text(
+  //                     'Set Profile Picture',
+  //                     textAlign: TextAlign.center,
+  //                     style: TextStyle(
+  //                       color: Colors.white,
+  //                       fontSize: 10,
+  //                     ),
+  //                   )
+  //                 ],
+  //               ),
+  //               backgroundImage: Image.asset(Assets.user).image,
+  //               radius: 60,
+  //             )),
+  //             SizedBox(
+  //               height: ageAnimation.value,
+  //             ),
+  //             Text(
+  //               'How old are you?',
+  //               style: Styles.questionLight,
+  //             ),
+  //             Row(
+  //               mainAxisSize: MainAxisSize.min,
+  //               children: <Widget>[
+  //                 NumberPicker.horizontal(
+  //                     initialValue: age,
+  //                     minValue: 15,
+  //                     maxValue: 100,
+  //                     highlightSelectedValue: true,
+  //                     onChanged: (num value) {
+  //                       setState(() {
+  //                         age = value;
+  //                       });
+  //                       //   print(age);
+  //                     }),
+  //                 Text('Years', style: Styles.textLight)
+  //               ],
+  //             ),
+  //             SizedBox(
+  //               height: usernameAnimation.value,
+  //             ),
+  //             Container(
+  //               child: Text(
+  //                 'Choose a username',
+  //                 style: Styles.questionLight,
+  //               ),
+  //             ),
+  //             Container(
+  //                 margin: EdgeInsets.only(top: 20),
+  //                 width: 120,
+  //                 child: TextField(
+  //                   textAlign: TextAlign.center,
+  //                   style: Styles.subHeadingLight,
+  //                   focusNode: usernameFocusNode,
+  //                   decoration: InputDecoration(
+  //                     hintText: '@username',
+  //                     contentPadding: EdgeInsets.fromLTRB(10, 5, 10, 5),
+  //                     focusedBorder: OutlineInputBorder(
+  //                       borderSide: BorderSide(color: Colors.white, width: 0.1),
+  //                     ),
+  //                     enabledBorder: OutlineInputBorder(
+  //                       borderSide: BorderSide(color: Colors.white, width: 0.1),
+  //                     ),
+  //                   ),
+  //                 ))
+  //           ],
+  //         ),
+  //       ));
+  // }
 
   buildPageTwo() {
     return InkWell(
         // to dismiss the keyboard when the user tabs out of the TextField
         onTap: () {
-          FocusScope.of(context).requestFocus(FocusNode());
-        },
-        child: Container(
-          child: Column(
+      FocusScope.of(context).requestFocus(FocusNode());
+    }, child: Container(
+      child: BlocBuilder<AuthenticationBloc, AuthenticationState>(
+        builder: (context, state) {
+          profileImage = Image.asset(Assets.user).image;
+          if (state is PreFillData) {
+            age = state.user.age != null ? state.user.age : 18;
+            profileImage = Image.network(state.user.photoUrl).image;
+          } else if (state is ReceivedProfilePicture) {
+            profileImageFile = state.file;
+            profileImage = Image.file(profileImageFile).image;
+          }
+
+          return Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               SizedBox(height: profilePicHeightAnimation.value),
-              Container(
-                  child: CircleAvatar(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Icon(
-                      Icons.camera,
-                      color: Colors.white,
-                      size: 15,
-                    ),
-                    Text(
-                      'Set Profile Picture',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                      ),
-                    )
-                  ],
-                ),
-                backgroundImage: Image.asset(Assets.user).image,
-                radius: 60,
-              )),
+              buildProfilePictureWidget(),
               SizedBox(
                 height: ageAnimation.value,
               ),
@@ -211,59 +403,95 @@ class _RegisterPageState extends State<RegisterPage>
                 'How old are you?',
                 style: Styles.questionLight,
               ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  NumberPicker.horizontal(
-                      initialValue: age,
-                      minValue: 15,
-                      maxValue: 100,
-                      highlightSelectedValue: true,
-                      onChanged: (num value) {
-                        setState(() {
-                          age = value;
-                        });
-                        //   print(age);
-                      }),
-                  Text('Years', style: Styles.textLight)
-                ],
-              ),
+              buildAgePickerWidget(),
               SizedBox(
                 height: usernameAnimation.value,
               ),
-              Container(
-                child: Text(
-                  'Choose a username',
-                  style: Styles.questionLight,
-                ),
+              Text(
+                'Choose a username',
+                style: Styles.questionLight,
               ),
-              Container(
-                  margin: EdgeInsets.only(top: 20),
-                  width: 120,
-                  child: TextField(
-                    textAlign: TextAlign.center,
-                    style: Styles.subHeadingLight,
-                    focusNode: usernameFocusNode,
-                    decoration: InputDecoration(
-                      hintText: '@username',
-                      
-                      contentPadding: EdgeInsets.fromLTRB(10, 5, 10, 5),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide:
-                            BorderSide(color: Colors.white, width: 0.1),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide:
-                            BorderSide(color: Colors.white, width: 0.1),
-                      ),
-                    ),
-                  ))
+              buildUsernameWidget()
             ],
+          );
+        },
+      ),
+    ));
+  }
+
+  buildProfilePictureWidget() {
+    return GestureDetector(
+      onTap: pickImage,
+      child: CircleAvatar(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Icon(
+              Icons.camera,
+              color: Colors.white,
+              size: 15,
+            ),
+            Text(
+              'Set Profile Picture',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 10,
+              ),
+            )
+          ],
+        ),
+        backgroundImage: profileImage,
+        radius: 60,
+      ),
+    );
+  }
+
+  buildAgePickerWidget() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        NumberPicker.horizontal(
+            initialValue: age,
+            minValue: 15,
+            maxValue: 100,
+            highlightSelectedValue: true,
+            onChanged: (num value) {
+              setState(() {
+                age = value;
+              });
+            }),
+        Text('Years', style: Styles.textLight)
+      ],
+    );
+  }
+
+  buildUsernameWidget() {
+    return Container(
+        margin: EdgeInsets.only(top: 20),
+        width: 120,
+        child: TextField(
+          textAlign: TextAlign.center,
+          style: Styles.subHeadingLight,
+          focusNode: usernameFocusNode,
+          controller: usernameController,
+          decoration: InputDecoration(
+            hintText: '@username',
+            // hintStyle: ,
+            contentPadding: EdgeInsets.fromLTRB(10, 5, 10, 5),
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: Palette.primaryColor, width: 0.1),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: Palette.primaryColor, width: 0.1),
+            ),
           ),
         ));
   }
 
+
   updatePageState(index) {
+    if (currentPage == index) return;
     if (index == 1)
       pageController.nextPage(
           duration: Duration(milliseconds: 300), curve: Curves.easeIn);
@@ -272,17 +500,21 @@ class _RegisterPageState extends State<RegisterPage>
       currentPage = index;
     });
   }
+  Future pickImage() async {
+    profileImageFile = await ImagePicker.pickImage(source: ImageSource.gallery);
+    authenticationBloc.add(PickedProfilePicture(profileImageFile));
+  }
 
-  Future<bool> onWillPop() {
+  Future<bool> onWillPop() async {
     if (currentPage == 1) {
       //go to first page if currently on second page
       pageController.previousPage(
         duration: Duration(milliseconds: 300),
         curve: Curves.easeOut,
       );
-      return Future.value(false);
+      return false;
     }
-    return Future.value(true);
+    return true;
   }
 
   @override
@@ -322,5 +554,30 @@ class _RegisterPageState extends State<RegisterPage>
       context,
       SlideLeftRoute(page: ConversationPageSlide()),
     );
+  }
+
+  buildUpdateProfileButtonWidget() {
+    return AnimatedOpacity(
+        opacity: currentPage == 1 ? 1.0 : 0.0,
+        //shows only on page 1
+        duration: Duration(milliseconds: 500),
+        child: Container(
+            margin: EdgeInsets.only(right: 20, bottom: 20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              mainAxisSize: MainAxisSize.max,
+              children: <Widget>[
+                FloatingActionButton(
+                  onPressed: () => authenticationBloc.add(SaveProfile(
+                      profileImageFile, age, usernameController.text)),
+                  elevation: 0,
+                  backgroundColor: Palette.primaryColor,
+                  child: Icon(
+                    Icons.done,
+                    color: Palette.accentColor,
+                  ),
+                )
+              ],
+            )));
   }
 }
